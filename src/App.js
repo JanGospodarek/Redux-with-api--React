@@ -5,48 +5,20 @@ import Products from "./components/Shop/Products";
 import { cartActions } from "./components/store";
 import { useEffect, useState, Fragment } from "react";
 import Notification from "./components/UI/Notofication";
+import { sendCartData } from "./components/store/index";
+let isInit = true;
 function App() {
   const cart = useSelector((state) => state.cart);
   const notification = useSelector((state) => state.notification);
-  const disp = useDispatch();
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    async function sendCartData() {
-      disp(
-        cartActions.showNotification({
-          status: "pending",
-          title: "Sending...",
-          message: "Sending cart data",
-        })
-      );
-      const response = await fetch(
-        "https://gowno-b3287-default-rtdb.firebaseio.com/cart.json",
-        {
-          method: "PUT",
-          body: JSON.stringify(cart),
-        }
-      );
-      if (!response.ok) throw new Error("Sending cart data failed.");
-      disp(
-        cartActions.showNotification({
-          status: "success",
-          title: "Success!",
-          message: "Sending cart data successfully!",
-        })
-      );
+    if (isInit) {
+      isInit = false;
+      return;
     }
-    try {
-      sendCartData();
-    } catch (error) {
-      disp(
-        cartActions.showNotification({
-          status: "error",
-          title: "Error!",
-          message: error.message,
-        })
-      );
-    }
-  }, [cart, disp]);
+    dispatch(sendCartData(cart));
+  }, [cart, dispatch]);
   return (
     <Fragment>
       {notification && (
